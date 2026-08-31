@@ -240,19 +240,19 @@ Coarse primary tag matching community shorthand. Prefer the **analytical** techn
 - **Example:** `synthetic`
 
 ### `crystallographic_direction`
-- **Meaning:** Direction of the measured D relative to crystallographic axes. Empty / `isotropic` / `melt` when anisotropy is not defined.
+- **Meaning:** Direction of the measured D relative to crystallographic axes. **Empty for melts and glasses** (they are isotropic). For minerals, empty if the source did not report a direction.
 - **Type:** string.
-- **Allowed:** Miller or axis notation as reported, normalized where possible: `//c`, `//a`, `[100]`, `[001]`, `[010]`, `//n_beta`, `isotropic`, `polycrystalline`, `melt`, `glass`, `unspecified`.
+- **Allowed:** Miller or axis notation as reported, normalized where possible: `//c`, `//a`, `[100]`, `[001]`, `[010]`, `//n_beta`, `isotropic`, `polycrystalline`, `unspecified`. Do **not** use `melt` or `glass` as direction tokens.
 - **Units:** none.
-- **Required:** no (required when the source reports anisotropy).
+- **Required:** no (required when the mineral source reports anisotropy). Forbidden for `host_type = melt`.
 - **Example:** `[001]`
 
 ### `anisotropy_flag`
-- **Meaning:** Whether this row is a direction-specific measurement (as opposed to an isotropic/average D).
+- **Meaning:** Whether this row is a direction-specific mineral measurement. Silicate melts and glasses are isotropic: this flag is always `false` for `host_type = melt`.
 - **Type:** boolean.
 - **Allowed:** `true` | `false`
 - **Units:** none.
-- **Required:** yes.
+- **Required:** yes. Must be `false` when `host_type = melt`.
 - **Example:** `true`
 
 ### `polycrystal_flag`

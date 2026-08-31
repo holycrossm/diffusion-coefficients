@@ -158,7 +158,7 @@ Brady 2010 typically stores log10 D0 (often cm²/s) and Ea. Confirm the log unit
 - `diffusion_type`: `self` | `tracer` | `chemical` | `interdiffusion`. If authors say “tracer” for EBD, recode to `chemical` + `effective_binary`.
 - `method`: prefer the **analytical** token (`SIMS`, `RBS`, `EPMA`, `LA-ICP-MS`, `FTIR`, …); put geometry in `experiment_geometry`.
 - `direct_measurement_flag = true` for profile / bulk-exchange laboratory D. v1 excludes viscosity-, conductivity-, and natural-zoning inversions.
-- `anisotropy_flag = true` if the row is direction-specific; `crystallographic_direction` normalized (`[001]`, `[100]`, `//c`, `isotropic`, `melt`).
+- `anisotropy_flag = true` only for direction-specific **mineral** rows; `crystallographic_direction` normalized (`[001]`, `[100]`, `//c`). Melts and glasses are isotropic: `host_type = melt` requires `anisotropy_flag = false` and empty `crystallographic_direction`. Never store `melt` or `glass` as a direction.
 
 ---
 

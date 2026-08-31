@@ -7,6 +7,7 @@ Checks (schema v1.0.0):
   - schema_version is 1.0.0 on every row
   - boolean columns are true, false, or empty (missing)
   - doi is never a 2010 RiMG compilation DOI (Zhang ch. 8 / Brady ch. 20)
+  - melts are isotropic: host_type=melt requires anisotropy_flag=false and empty crystallographic_direction
 
 Exit 0 on success, 1 on any failure. Run from anywhere:
   python scripts/validate_csv.py
@@ -175,6 +176,24 @@ def main() -> int:
                         errors.append(
                             f"line {lineno} {rid}: {col}={val!r} "
                             f"(allowed: true, false, or empty)"
+                        )
+
+            if rec.get("host_type") == "melt":
+                aniso = rec.get("anisotropy_flag", "")
+                direc = rec.get("crystallographic_direction", "")
+                if aniso != "false":
+                    counts["melt_iso"] += 1
+                    if counts["melt_iso"] <= MAX_PRINT:
+                        errors.append(
+                            f"line {lineno} {rid}: melt row must have "
+                            f"anisotropy_flag=false (got {aniso!r})"
+                        )
+                if direc.strip():
+                    counts["melt_iso"] += 1
+                    if counts["melt_iso"] <= MAX_PRINT:
+                        errors.append(
+                            f"line {lineno} {rid}: melt row must have empty "
+                            f"crystallographic_direction (got {direc!r}; melts are isotropic)"
                         )
 
             doi_raw = rec.get("doi", "")
