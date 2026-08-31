@@ -1,0 +1,53 @@
+name: Pages (placeholder)
+
+# GitHub Pages is not enabled until Megan says go.
+# This workflow only copies the canonical CSV into site/data and uploads
+# a generic artifact. It does not deploy, does not touch gh-pages, and
+# does not call actions/deploy-pages.
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copy canonical CSV into site/data
+        run: |
+          mkdir -p site/data
+          cp data/diffusion_coefficients.csv site/data/diffusion_coefficients.csv
+
+      - name: Upload site artifact (not a Pages deploy)
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-pages-site
+          path: site
+
+      # When Pages is enabled (source = GitHub Actions, site root = /site):
+      #   1. Keep the copy step above.
+      #   2. Replace upload-artifact with:
+      #        - uses: actions/configure-pages@v5
+      #        - uses: actions/upload-pages-artifact@v3
+      #          with:
+      #            path: site
+      #   3. Add a deploy job:
+      #        deploy:
+      #          needs: prepare-site
+      #          runs-on: ubuntu-latest
+      #          environment:
+      #            name: github-pages
+      #            url: ${{ steps.deployment.outputs.page_url }}
+      #          permissions:
+      #            pages: write
+      #            id-token: write
+      #          steps:
+      #            - id: deployment
+      #              uses: actions/deploy-pages@v4

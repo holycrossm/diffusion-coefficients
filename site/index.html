@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Experimental diffusion coefficients (minerals and silicate melts)</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root {
+  --ink: #1b1d1c;
+  --muted: #5c6562;
+  --line: #d5d0c6;
+  --paper: #f7f4ee;
+  --card: #fffcf7;
+  --head: #24302c;
+  --accent: #2f5d56;
+  --link: #1b4f72;
+  --sel: #e7efe8;
+  --warn: #7a4a12;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  line-height: 1.45;
+}
+header {
+  background: var(--head);
+  color: #f3efe6;
+  padding: 1.15rem 1.25rem 1rem;
+  border-bottom: 3px solid var(--accent);
+}
+header h1 {
+  font-family: Palatino, "Palatino Linotype", "Times New Roman", serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+  letter-spacing: 0.01em;
+}
+header .sub { color: #c9c2b2; font-size: 0.92rem; }
+header .badge {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid #c9c2b2;
+  padding: 0.12rem 0.45rem;
+  color: #e6dcc8;
+}
+main { padding: 0.9rem 1.1rem 2.5rem; max-width: 1400px; margin: 0 auto; }
+.note {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 0.8rem;
+}
+.note strong { color: var(--warn); font-weight: 600; }
+
+
+#filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.7rem;
+  align-items: end;
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 0.7rem 0.8rem;
+  margin-bottom: 0.7rem;
+}
+label.f {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  gap: 0.18rem;
+}
+label.f.grow { flex: 1 1 220px; }
+input, select, button {
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 0.32rem 0.45rem;
+  min-height: 2rem;
+}
+input[type="number"] { width: 6.2rem; }
+select { min-width: 8.5rem; }
+#q { width: 100%; }
+button {
+  background: var(--head);
+  color: #f3efe6;
+  border-color: var(--head);
+  cursor: pointer;
+  padding: 0.32rem 0.7rem;
+}
+button.ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line);
+}
+#status {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin: 0 0 0.45rem;
+}
+#status.error { color: #8b1e1e; }
+.table-wrap {
+  overflow: auto;
+  max-height: 58vh;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.82rem;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  background: #ece7dc;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 0.28rem 0.5rem;
+  border-bottom: 1px solid #eeeae2;
+  vertical-align: top;
+  white-space: nowrap;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: #f3f0e8; }
+tbody tr.selected { background: var(--sel); }
+tbody tr:nth-child(even):not(.selected):not(:hover) { background: #fbf9f4; }
+a { color: var(--link); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; }
+#details {
+  margin-top: 0.85rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 0.8rem 1rem 1rem;
+  min-height: 4rem;
+}
+#details h2 {
+  font-size: 1rem;
+  margin: 0 0 0.35rem;
+  font-family: Palatino, "Palatino Linotype", "Times New Roman", serif;
+}
+#details .meta { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.6rem; }
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.7rem 1.1rem; }
+.group h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.15rem;
+}
+dl { margin: 0; display: grid; grid-template-columns: 11.5rem 1fr; gap: 0.12rem 0.55rem; font-size: 0.8rem; }
+dt { color: var(--muted); }
+dd { margin: 0; word-break: break-word; }
+dd.empty { color: #b0aaa0; }
+footer { margin-top: 1.2rem; font-size: 0.78rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Experimental diffusion coefficients (minerals and silicate melts)</h1>
+  <div class="sub">pre-release QA build</div>
+  <div class="badge">Not published</div>
+</header>
+<main>
+<p class="note"><strong>Citation of record is the row DOI, not this page.</strong> 2010 Zhang/Brady numbers are staged (provenance=compilation_2010) pending primary re-extract. Schema v1.0.0.</p>
+
+
+<div id="filters">
+  <label class="f grow">Free text
+    <input id="q" type="search" placeholder="host, diffusant, authors, DOI, notes…" autocomplete="off">
+  </label>
+  <label class="f">host_type
+    <select id="host_type"><option value="">all</option></select>
+  </label>
+  <label class="f">host_name
+    <input id="host_name" list="host_name_list" placeholder="any">
+    <datalist id="host_name_list"></datalist>
+  </label>
+  <label class="f">diffusant
+    <input id="diffusant" list="diffusant_list" placeholder="any">
+    <datalist id="diffusant_list"></datalist>
+  </label>
+  <label class="f">diffusion_type
+    <select id="diffusion_type"><option value="">all</option></select>
+  </label>
+  <label class="f">year min
+    <input id="year_min" type="number" min="1900" max="2100" step="1" placeholder="1900">
+  </label>
+  <label class="f">year max
+    <input id="year_max" type="number" min="1900" max="2100" step="1" placeholder="2026">
+  </label>
+  <button type="button" class="ghost" id="clear">Clear</button>
+</div>
+<p id="status">Loading data/diffusion_coefficients.csv…</p>
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>record_id</th>
+      <th>host_type</th>
+      <th>host_name</th>
+      <th>diffusant</th>
+      <th>diffusion_type</th>
+      <th>t_min_k</th>
+      <th>t_max_k</th>
+      <th>log10_d0_m2_s</th>
+      <th>ea_j_mol</th>
+      <th>year</th>
+      <th>doi</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+</div>
+<section id="details">
+  <p class="meta">Click a row to show the remaining columns. The grid does not list all 113 fields.</p>
+</section>
+<footer>
+  Canonical file: data/diffusion_coefficients.csv (copy under site/data/ for this preview).
+  Append-only record_id. Empty cells are missing, not zero.
+</footer>
+</main>
+<script>
+
+
+const CSV_URL = "data/diffusion_coefficients.csv";
+const SHORT = ["record_id","host_type","host_name","diffusant","diffusion_type","t_min_k","t_max_k","log10_d0_m2_s","ea_j_mol","year","doi"];
+const GROUPS = [
+  ["Identity", ["record_id","schema_version","record_type","related_record_id"]],
+  ["Diffusant", ["diffusant","diffusant_isotope","diffusant_valence","co_diffusant","diffusion_type","diffusion_type_qualifier","reference_frame"]],
+  ["Host", ["host_type","host_name","host_ima_name","host_formula","host_endmember","host_group","host_origin","crystallographic_direction","anisotropy_flag","polycrystal_flag"]],
+  ["Composition", ["composition_as_reported","composition_basis","sio2_wt_pct","tio2_wt_pct","al2o3_wt_pct","cr2o3_wt_pct","feot_wt_pct","feo_wt_pct","fe2o3_wt_pct","mno_wt_pct","mgo_wt_pct","cao_wt_pct","na2o_wt_pct","k2o_wt_pct","p2o5_wt_pct","nio_wt_pct","other_oxides","mg_number","nbo_t","composition_notes"]],
+  ["Water", ["hydrous_flag","h2o_wt_pct","h2o_wt_pct_min","h2o_wt_pct_max","a_h2o","water_notes"]],
+  ["Temperature", ["t_k","t_min_k","t_max_k","t_original_value","t_original_unit"]],
+  ["Pressure", ["p_pa","p_min_pa","p_max_pa","p_original_value","p_original_unit"]],
+  ["fO2 and run", ["fo2_buffer","fo2_buffer_offset","log10_fo2_bar","fo2_constraint","apparatus","duration_s"]],
+  ["Arrhenius D0", ["d0_m2_s","log10_d0_m2_s","d0_unc_log10","d0_unc_type","d0_original_value","d0_original_unit"]],
+  ["Activation energy", ["ea_j_mol","ea_unc_j_mol","ea_unc_type","ea_original_value","ea_original_unit"]],
+  ["Activation volume", ["activation_volume_m3_mol","activation_volume_unc_m3_mol","activation_volume_original_value","activation_volume_original_unit"]],
+  ["Equation", ["arrhenius_equation_form","gas_constant_used_j_mol_k"]],
+  ["Isothermal D", ["d_m2_s","log10_d_m2_s","d_unc_log10","d_unc_type","d_original_value","d_original_unit"]],
+  ["Fit", ["n_experiments","n_temperature_points","fit_r_squared"]],
+  ["Method", ["method","experiment_geometry","analytical_technique","direct_measurement_flag","grain_boundary_contribution","concentration_dependent_flag","mixed_md_experiment_flag"]],
+  ["Quality", ["quality_flag","t_calibration_notes","caveats","notes","extracted_from","compiler","compilation_date","review_status"]],
+  ["Citation", ["citation_key","authors","year","title","journal","volume","pages","doi","source_locus"]]
+];
+
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let i = 0;
+  let q = false;
+  if (text.charCodeAt(0) === 0xFEFF) i = 1;
+  while (i < text.length) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { cell += '"'; i += 2; continue; }
+        q = false; i++; continue;
+      }
+      cell += c; i++; continue;
+    }
+    if (c === '"') { q = true; i++; continue; }
+    if (c === ",") { row.push(cell); cell = ""; i++; continue; }
+    if (c === "\r") { i++; continue; }
+    if (c === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; i++; continue; }
+    cell += c; i++;
+  }
+  if (cell.length || row.length) { row.push(cell); rows.push(row); }
+  if (rows.length && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0] === "") rows.pop();
+  return rows;
+}
+
+function rowsToObjects(grid) {
+  const header = grid[0];
+  const out = [];
+  for (let r = 1; r < grid.length; r++) {
+    const line = grid[r];
+    const obj = {};
+    for (let c = 0; c < header.length; c++) obj[header[c]] = line[c] == null ? "" : line[c];
+    obj._i = r - 1;
+    obj._blob = header.map(h => obj[h]).join(" ").toLowerCase();
+    out.push(obj);
+  }
+  return { header, records: out };
+}
+
+function uniqueSorted(records, key) {
+  const s = new Set();
+  for (const rec of records) if (rec[key]) s.add(rec[key]);
+  return Array.from(s).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
+
+function fillSelect(sel, values) {
+  for (const v of values) {
+    const o = document.createElement("option");
+    o.value = v; o.textContent = v;
+    sel.appendChild(o);
+  }
+}
+function fillList(list, values) {
+  list.innerHTML = "";
+  for (const v of values) {
+    const o = document.createElement("option");
+    o.value = v;
+    list.appendChild(o);
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
+
+function doiHref(doi) {
+  const d = (doi || "").trim();
+  if (!d) return "";
+  const bare = d.replace(/^https?:\/\/(?:dx\.)?doi\.org\//i, "");
+  return "https://doi.org/" + encodeURI(bare);
+}
+
+
+let ALL = [];
+let HEADER = [];
+let filtered = [];
+let selectedId = null;
+const PAGE = 500;
+let page = 0;
+
+const el = id => document.getElementById(id);
+const statusEl = el("status");
+const tbody = el("tbody");
+
+function currentFilters() {
+  return {
+    q: el("q").value.trim().toLowerCase(),
+    host_type: el("host_type").value,
+    host_name: el("host_name").value.trim(),
+    diffusant: el("diffusant").value.trim(),
+    diffusion_type: el("diffusion_type").value,
+    year_min: el("year_min").value,
+    year_max: el("year_max").value
+  };
+}
+
+function applyFilter() {
+  const f = currentFilters();
+  const ymin = f.year_min === "" ? null : Number(f.year_min);
+  const ymax = f.year_max === "" ? null : Number(f.year_max);
+  filtered = ALL.filter(rec => {
+    if (f.host_type && rec.host_type !== f.host_type) return false;
+    if (f.host_name && rec.host_name.toLowerCase().indexOf(f.host_name.toLowerCase()) === -1) return false;
+    if (f.diffusant && rec.diffusant.toLowerCase().indexOf(f.diffusant.toLowerCase()) === -1) return false;
+    if (f.diffusion_type && rec.diffusion_type !== f.diffusion_type) return false;
+    if (ymin != null || ymax != null) {
+      if (!rec.year) return false;
+      const y = Number(rec.year);
+      if (!Number.isFinite(y)) return false;
+      if (ymin != null && y < ymin) return false;
+      if (ymax != null && y > ymax) return false;
+    }
+    if (f.q && rec._blob.indexOf(f.q) === -1) return false;
+    return true;
+  });
+  page = 0;
+  renderTable();
+}
+
+function cellHtml(key, rec) {
+  const v = rec[key] || "";
+  if (key === "doi" && v) {
+    const href = doiHref(v);
+    return '<a href="' + esc(href) + '" target="_blank" rel="noopener noreferrer">' + esc(v) + "</a>";
+  }
+  if (key === "record_id") return '<span class="mono">' + esc(v) + "</span>";
+  return esc(v);
+}
+
+function renderTable() {
+  const n = filtered.length;
+  const start = page * PAGE;
+  const slice = filtered.slice(start, start + PAGE);
+  const frag = document.createDocumentFragment();
+  tbody.replaceChildren();
+  for (const rec of slice) {
+    const tr = document.createElement("tr");
+    tr.dataset.id = rec.record_id;
+    if (rec.record_id === selectedId) tr.className = "selected";
+    for (const key of SHORT) {
+      const td = document.createElement("td");
+      td.innerHTML = cellHtml(key, rec);
+      tr.appendChild(td);
+    }
+    tr.addEventListener("click", (ev) => {
+      if (ev.target.closest("a")) return;
+      selectRecord(rec.record_id);
+    });
+    frag.appendChild(tr);
+  }
+  tbody.appendChild(frag);
+  const shown = slice.length;
+  const range = shown ? (start + 1) + "–" + (start + shown) : "0";
+  let msg = n + " of " + ALL.length + " rows";
+  if (n > PAGE) msg += " (showing " + range + ")";
+  if (n > PAGE) {
+    msg += "  ";
+  }
+  statusEl.textContent = msg;
+  statusEl.className = "";
+  renderPager(n);
+}
+
+
+function renderPager(n) {
+  let pager = document.getElementById("pager");
+  if (!pager) {
+    pager = document.createElement("span");
+    pager.id = "pager";
+    pager.style.marginLeft = "0.75rem";
+    statusEl.insertAdjacentElement("afterend", pager);
+  }
+  pager.replaceChildren();
+  if (n <= PAGE) return;
+  const pages = Math.ceil(n / PAGE);
+  const prev = document.createElement("button");
+  prev.type = "button";
+  prev.className = "ghost";
+  prev.textContent = "Prev";
+  prev.disabled = page === 0;
+  prev.addEventListener("click", () => { page = Math.max(0, page - 1); renderTable(); });
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "ghost";
+  next.textContent = "Next";
+  next.disabled = page >= pages - 1;
+  next.addEventListener("click", () => { page = Math.min(pages - 1, page + 1); renderTable(); });
+  const lab = document.createElement("span");
+  lab.style.margin = "0 0.45rem";
+  lab.style.fontSize = "0.85rem";
+  lab.style.color = "var(--muted)";
+  lab.textContent = "page " + (page + 1) + " / " + pages;
+  pager.appendChild(prev);
+  pager.appendChild(lab);
+  pager.appendChild(next);
+}
+
+function findRec(id) {
+  for (const rec of ALL) if (rec.record_id === id) return rec;
+  return null;
+}
+
+function selectRecord(id) {
+  selectedId = id;
+  for (const tr of tbody.querySelectorAll("tr")) {
+    tr.classList.toggle("selected", tr.dataset.id === id);
+  }
+  const rec = findRec(id);
+  const box = el("details");
+  if (!rec) {
+    box.innerHTML = '<p class="meta">Click a row to show the remaining columns.</p>';
+    return;
+  }
+  const doi = rec.doi ? doiHref(rec.doi) : "";
+  const doiHtml = doi ? ' · <a href="' + esc(doi) + '" target="_blank" rel="noopener noreferrer">' + esc(rec.doi) + "</a>" : "";
+  let html = "<h2>" + esc(rec.record_id) + " · " + esc(rec.host_name || "") + " · " + esc(rec.diffusant || "") + "</h2>";
+  html += '<div class="meta">' + esc(rec.citation_key || rec.authors || "") + " (" + esc(rec.year || "") + ")" + doiHtml + "</div>";
+  html += '<p class="meta"><label><input type="checkbox" id="show_empty"> show empty fields</label></p>';
+  html += '<div class="groups" id="groups"></div>';
+  box.innerHTML = html;
+  const draw = () => {
+    const showEmpty = el("show_empty").checked;
+    const wrap = el("groups");
+    wrap.replaceChildren();
+    for (const [title, keys] of GROUPS) {
+      const vis = keys.filter(k => showEmpty || (rec[k] && rec[k].length));
+      if (!vis.length) continue;
+      const sec = document.createElement("div");
+      sec.className = "group";
+      const h = document.createElement("h3");
+      h.textContent = title;
+      sec.appendChild(h);
+      const dl = document.createElement("dl");
+      for (const k of vis) {
+        const dt = document.createElement("dt");
+        dt.textContent = k;
+        const dd = document.createElement("dd");
+        const v = rec[k] || "";
+        if (!v) { dd.className = "empty"; dd.textContent = "—"; }
+        else if (k === "doi") dd.innerHTML = '<a href="' + esc(doiHref(v)) + '" target="_blank" rel="noopener noreferrer">' + esc(v) + "</a>";
+        else dd.textContent = v;
+        dl.appendChild(dt); dl.appendChild(dd);
+      }
+      sec.appendChild(dl);
+      wrap.appendChild(sec);
+    }
+  };
+  el("show_empty").addEventListener("change", draw);
+  draw();
+  box.scrollIntoView({ block: "nearest" });
+}
+
+
+function wireFilters() {
+  let t = null;
+  const go = () => applyFilter();
+  const delayed = () => { clearTimeout(t); t = setTimeout(go, 80); };
+  el("q").addEventListener("input", delayed);
+  el("host_type").addEventListener("change", go);
+  el("host_name").addEventListener("change", go);
+  el("host_name").addEventListener("input", delayed);
+  el("diffusant").addEventListener("change", go);
+  el("diffusant").addEventListener("input", delayed);
+  el("diffusion_type").addEventListener("change", go);
+  el("year_min").addEventListener("input", delayed);
+  el("year_max").addEventListener("input", delayed);
+  el("clear").addEventListener("click", () => {
+    el("q").value = "";
+    el("host_type").value = "";
+    el("host_name").value = "";
+    el("diffusant").value = "";
+    el("diffusion_type").value = "";
+    el("year_min").value = "";
+    el("year_max").value = "";
+    selectedId = null;
+    applyFilter();
+    el("details").innerHTML = '<p class="meta">Click a row to show the remaining columns. The grid does not list all 113 fields.</p>';
+  });
+}
+
+function boot(text) {
+  const parsed = rowsToObjects(parseCsv(text));
+  HEADER = parsed.header;
+  ALL = parsed.records;
+  fillSelect(el("host_type"), uniqueSorted(ALL, "host_type"));
+  fillSelect(el("diffusion_type"), uniqueSorted(ALL, "diffusion_type"));
+  fillList(el("host_name_list"), uniqueSorted(ALL, "host_name"));
+  fillList(el("diffusant_list"), uniqueSorted(ALL, "diffusant"));
+  wireFilters();
+  applyFilter();
+}
+
+fetch(CSV_URL)
+  .then(r => {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.text();
+  })
+  .then(boot)
+  .catch(err => {
+    statusEl.className = "error";
+    statusEl.textContent = "Could not load " + CSV_URL + " (" + err.message + "). Serve the site folder: python3 -m http.server 8000";
+  });
+</script>
+</body>
+</html>
